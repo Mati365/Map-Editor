@@ -239,7 +239,10 @@ class MapRenderer extends JPanel {
 			 */
 			g2.setColor(Color.darkGray);
 			g2.drawRect(0, 0, (int) platform.w, (int) platform.h);
-
+			if (platform.isSet(Flag.SCRIPT)) {
+				g2.setColor(Color.white);
+				g2.drawString("Skrypt", platform.w / 2 - 20, platform.h / 2 + 5);
+			}
 			g2.setColor(platform.col);
 			if (platform.border[0]) {
 				g2.drawLine(0, 0, (int) platform.w, 0);
@@ -303,7 +306,7 @@ class MapRenderer extends JPanel {
 					/**
 						 * 
 						 */
-					case NONE:
+					default:
 						break;
 				}
 
@@ -351,6 +354,45 @@ class MapRenderer extends JPanel {
 						platform.y + 20);
 			}
 		}
+		g2.setColor(Color.red);
+		//
+		if (platform.orientation != 0) {
+			g2.setStroke(new BasicStroke(3));
+			switch (platform.orientation) {
+			// prawo
+				case 1:
+					g2.drawLine((int) platform.x + (int) platform.w,
+							(int) platform.y,
+							(int) platform.x + (int) platform.w,
+							(int) platform.y + (int) platform.h);
+					break;
+				// lewo
+				case 2:
+					g2.drawLine((int) platform.x,
+							(int) platform.y,
+							(int) platform.x,
+							(int) platform.y + (int) platform.h);
+					break;
+				// gora
+				case 3:
+					g2.drawLine((int) platform.x,
+							(int) platform.y,
+							(int) platform.x + (int) platform.w,
+							(int) platform.y);
+					break;
+				// dol
+				case 4:
+					g2.drawLine((int) platform.x, (int) platform.y
+							+ (int) platform.h, (int) platform.x
+							+ (int) platform.w, (int) platform.y
+							+ (int) platform.h);
+					break;
+			}
+		}
+		g2.setColor(Color.white);
+		g2.drawString("ID:" + platform.script_id,
+				platform.x + platform.w - 50,
+				platform.y + 20);
 		// g2.dispose();
 	}
 

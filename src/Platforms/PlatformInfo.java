@@ -3,6 +3,8 @@ package Platforms;
 import java.awt.Color;
 import java.util.LinkedList;
 
+import Editor.Editor;
+
 public class PlatformInfo {
 	public float			x, y, w, h;
 
@@ -12,7 +14,7 @@ public class PlatformInfo {
 	public PlatformShape	shape;
 
 	public float			to_x			= -1, to_y = -1;
-	public float			move_velocity	= 2;
+	public float			move_velocity	= 1;
 	public boolean			move_loop		= false;
 
 	public int				flag			= Flag.NONE.flag;
@@ -22,6 +24,10 @@ public class PlatformInfo {
 	public boolean			resize_lock		= false;
 
 	public Mobs.Type		mob_type		= null;
+	public String			script;
+
+	public int				script_id		= -1;
+	public int				orientation		= 0;
 
 	public enum Type {
 		DIAGONAL(0), SIMPLE(1), FILLED(2), NONE(3), MOB(4);
@@ -40,7 +46,8 @@ public class PlatformInfo {
 		STATIC(1 << 1),
 		HIDDEN(1 << 2),
 		NOT_RENDERABLE(1 << 3),
-		SHAPE(1 << 4);
+		SHAPE(1 << 4),
+		SCRIPT(1 << 5);
 
 		private int	flag;
 
@@ -157,37 +164,43 @@ public class PlatformInfo {
 			LinkedList<PlatformShape> shapes) {
 		String[] split = str.split(" ");
 
-		float x = Double.valueOf(split[11]).floatValue(), y = Double.valueOf(split[12])
-				.floatValue(), w = Double.valueOf(split[13]).floatValue(), h = Double.valueOf(split[14])
-				.floatValue(), r = Double.valueOf(split[15]).floatValue(), g = Double.valueOf(split[16])
-				.floatValue(), b = Double.valueOf(split[17]).floatValue(), a = Double.valueOf(split[18])
+		float x = Double.valueOf(split[12]).floatValue(), y = Double.valueOf(split[13])
+				.floatValue(), w = Double.valueOf(split[14]).floatValue(), h = Double.valueOf(split[15])
+				.floatValue(), r = Double.valueOf(split[16]).floatValue(), g = Double.valueOf(split[17])
+				.floatValue(), b = Double.valueOf(split[18]).floatValue(), a = Double.valueOf(split[19])
 				.floatValue();
 		PlatformInfo p = new PlatformInfo(x,
 				y,
 				w,
 				h,
 				new Color((int) r, (int) g, (int) b, (int) a),
-				Integer.valueOf(split[10]),
-				Integer.valueOf(split[19]));
-		p.move_loop = split[5].equals("1") ? true : false;
+				Integer.valueOf(split[11]),
+				Integer.valueOf(split[20]));
+		p.script_id = Integer.valueOf(split[0]); // !!!!!!!!!!!!!!
+		//
+		Editor.script_id_counter = Editor.script_id_counter < p.script_id ? p.script_id
+				: Editor.script_id_counter;
+		Editor.script_id_counter++;
 
-		float to_x = Double.valueOf(split[6]).floatValue();
-		float to_y = Double.valueOf(split[7]).floatValue();
+		p.move_loop = split[6].equals("1") ? true : false;
+
+		float to_x = Double.valueOf(split[7]).floatValue();
+		float to_y = Double.valueOf(split[8]).floatValue();
 
 		p.to_x = (to_x == -1 ? -1 : x + w + to_x);
 		p.to_y = (to_y == -1 ? -1 : y + h + to_y);
-		p.move_velocity = Double.valueOf(split[8]).floatValue();
+		p.move_velocity = Double.valueOf(split[9]).floatValue();
 		// p.move_velocity = Double.valueOf(split[9]).floatValue();
-		p.type = Type.values()[Integer.valueOf(split[4])];
+		p.type = Type.values()[Integer.valueOf(split[5])];
 
 		// !!!!!!!!!!!!!!!
 		for (int i = 0; i < 4; ++i) {
-			p.border[i] = split[i].equals("1") ? true : false;
+			p.border[i] = split[i + 1].equals("1") ? true : false;
 		}
 		// !!!!!!!!!!!!!!!
 
-		if (Integer.valueOf(split[20]) == 1) {
-			String label = split[21];
+		if (Integer.valueOf(split[21]) == 1) {
+			String label = split[22];
 			for (PlatformShape s : shapes) {
 				if (s.getLabel().equals(label)) {
 					p.setShape(s);
@@ -209,16 +222,17 @@ public class PlatformInfo {
 	public String toString() {
 		float distance_x = (to_x != -1 ? to_x - x - w : -1);
 		float distance_y = (to_y != -1 ? to_y - y - h : -1);
-		
-		String _move = (move_loop ? "1" : "0") + " " + distance_x + " "
-				+ distance_y + " " + (distance_x > 0 ? "2" : "0")
-				+ " " + (distance_y > 0 ? "2" : "0");
 
-		String str = (border[0] ? 1 : 0) + " " + (border[1] ? 1 : 0) + " "
-				+ (border[2] ? 1 : 0) + " " + (border[3] ? 1 : 0) + " "
-				+ type.val + " " + _move + " " + flag + " " + x + " " + y + " "
-				+ w + " " + h + " " + col.getRed() + " " + col.getGreen() + " "
-				+ col.getBlue() + " " + col.getAlpha() + " " + level + " "
+		String _move = (move_loop ? "1" : "0") + " " + distance_x + " "
+				+ distance_y + " " + (distance_x > 0 ? "1" : "0") + " "
+				+ (distance_y > 0 ? "1" : "0");
+
+		String str = script_id + " " + (border[0] ? 1 : 0) + " "
+				+ (border[1] ? 1 : 0) + " " + (border[2] ? 1 : 0) + " "
+				+ (border[3] ? 1 : 0) + " " + type.val + " " + _move + " "
+				+ flag + " " + x + " " + y + " " + w + " " + h + " "
+				+ col.getRed() + " " + col.getGreen() + " " + col.getBlue()
+				+ " " + col.getAlpha() + " " + level + " "
 				+ (shape == null ? 0 : 1) + " ";
 		if (shape != null)
 			str += shape.getLabel() + " ";

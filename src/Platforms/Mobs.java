@@ -2,7 +2,7 @@ package Platforms;
 
 public class Mobs {
 	public enum Type {
-		SCORE(0), HEALTH(1), GHOST(2), GUN(4), GREEN_GUN(5), PLAYER(6);
+		SCORE(0), HEALTH(1), GHOST(2), GUN(4), PLAYER(5), SPIKES(6), LADDER(7);
 
 		public int	val;
 
@@ -12,7 +12,7 @@ public class Mobs {
 
 		public static Type getFromIndex(int index) {
 			for (Type type : Type.values()) {
-				if(type.val == index) {
+				if (type.val == index) {
 					return type;
 				}
 			}
@@ -27,11 +27,18 @@ public class Mobs {
 		shapes[Type.HEALTH.val] = new PlatformShape("Mobs/zycie.txt");
 		shapes[Type.GHOST.val] = new PlatformShape("Mobs/wrog.txt");
 		shapes[Type.GUN.val] = new PlatformShape("Mobs/bron.txt");
-		shapes[Type.GREEN_GUN.val] = new PlatformShape("Mobs/bron.txt");
-		shapes[Type.PLAYER.val] = new PlatformShape("Mobs/obiekt.txt");
+		shapes[Type.PLAYER.val] = new PlatformShape("Mobs/gracz.txt");
+		//
+		shapes[Type.SPIKES.val] = new PlatformShape("Mobs/kolce_gora.txt");
+		shapes[Type.LADDER.val] = new PlatformShape("Mobs/drabina.txt");
 	}
 
-	public static PlatformInfo getMob(Type type, float x, float y, int level) {
+	public static PlatformInfo getMob(
+			Type type,
+			float x,
+			float y,
+			int level,
+			int orientation) {
 		if (shapes[0] == null) {
 			loadTextures();
 		}
@@ -43,38 +50,52 @@ public class Mobs {
 				PlatformInfo.Type.MOB.val,
 				level);
 		platform.setShape(shapes[type.val]);
+		platform.orientation = orientation;
+
 		switch (type) {
+			case LADDER:
+				platform.fitToWidth(24);
+				break;
+			/**
+			 * 
+			 */
+			case SPIKES:
+				platform.fitToWidth(24);
+				break;
+			/**
+			 * 
+			 */
 			case SCORE:
-				platform.fitToWidth(26);
+				platform.fitToWidth(12);
 				break;
 			/**
 				 * 
 				 */
 			case HEALTH:
-				platform.fitToWidth(32);
+				platform.fitToWidth(16);
 				break;
 			/**
 				 * 
 				 */
 			case GHOST:
-				platform.fitToWidth(90);
+				platform.fitToWidth(23);
 				break;
 			/**
 				 * 
 				 */
 			case GUN:
-			case GREEN_GUN:
-				platform.fitToWidth(32);
+				platform.fitToWidth(16);
 				break;
 			/**
 				 * 
 				 */
 			case PLAYER:
-				platform.fitToWidth(36);
+				platform.fitToWidth(23);
 				break;
 		}
 		platform.resize_lock = true;
 		platform.mob_type = type;
+		platform.flag = PlatformInfo.Flag.NONE.getFlag();
 		return platform;
 	}
 }

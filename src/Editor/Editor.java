@@ -39,6 +39,7 @@ public class Editor extends JPanel {
 	private MapRenderer		map_renderer		= new MapRenderer(this);
 	private JScrollPane		scroll				= new JScrollPane(map_renderer);
 	private PlatformToolbar	platform_property	= new PlatformToolbar();
+	private ScriptToolBar	script_toolbar		= new ScriptToolBar();
 	private JTabbedPane		property_tab		= new JTabbedPane();
 
 	private void create() {
@@ -52,6 +53,7 @@ public class Editor extends JPanel {
 
 		add(scroll, BorderLayout.CENTER);
 		add(property_tab, BorderLayout.SOUTH);
+		add(script_toolbar, BorderLayout.WEST);
 
 		setupMenu();
 	}
@@ -75,6 +77,8 @@ public class Editor extends JPanel {
 
 	private final JFileChooser			file_chooser		= new JFileChooser();
 	private LinkedList<PlatformShape>	shapes_container	= new LinkedList<PlatformShape>();
+
+	public static int					script_id_counter	= 0;
 
 	/**
 	 * Dodawanie platformy
@@ -176,16 +180,16 @@ public class Editor extends JPanel {
 			for (int i = 0; i < components.length; ++i) {
 				if (i < Mobs.Type.values().length
 						&& e.getSource().equals(components[i])) {
-					map_renderer.getMap()
-							.getPlatforms()
-							.add(Mobs.getMob(Mobs.Type.values()[i],
-									map_renderer.getVisibleRect().x
-											+ map_renderer.getVisibleRect().width
-											/ 2,
-									map_renderer.getVisibleRect().y
-											+ map_renderer.getVisibleRect().height
-											/ 2,
-									1));
+					PlatformInfo mob = Mobs.getMob(Mobs.Type.values()[i],
+							map_renderer.getVisibleRect().x
+									+ map_renderer.getVisibleRect().width / 2,
+							map_renderer.getVisibleRect().y
+									+ map_renderer.getVisibleRect().height / 2,
+							1,
+							0);
+					mob.script_id = script_id_counter++;
+
+					map_renderer.getMap().getPlatforms().add(mob);
 					map_renderer.repaint();
 					break;
 				}
@@ -198,9 +202,61 @@ public class Editor extends JPanel {
 	 * 
 	 *
 	 */
+	class ScriptToolBar extends JPanel {
+		public JTextArea	script	= new JTextArea();
+		public JTextField	pos		= new JTextField(),
+				bounds = new JTextField(), move_pos = new JTextField();
+
+		public ScriptToolBar() {
+			setPreferredSize(new Dimension(180, 300));
+			create();
+		}
+
+		private void create() {
+			setLayout(new BorderLayout());
+			add(new JScrollPane(script), BorderLayout.CENTER);
+
+			JButton set = new JButton("SET");
+			add(set, BorderLayout.NORTH);
+
+			JPanel panel = new JPanel(new GridLayout(3, 1));
+			panel.add(pos);
+			panel.add(bounds);
+			panel.add(move_pos);
+			add(panel, BorderLayout.SOUTH);
+
+			set.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					PlatformInfo info = Editor.this.map_renderer.getSkel()
+							.getPlatform();
+					if (info != null) {
+						info.script = script.getText();
+						info.flag |= Flag.SCRIPT.getFlag();
+						Editor.this.repaint();
+					}
+				}
+			});
+		}
+
+		public void refreshScript() {
+			PlatformInfo info = Editor.this.map_renderer.getSkel()
+					.getPlatform();
+			if (info != null) {
+				script.setText(info.script);
+				pos.setText("X:" + info.x + " Y:" + info.y);
+				bounds.setText("W:" + info.w + " H:" + info.h);
+				move_pos.setText("To X:" + info.to_x + " To Y:" + info.to_y);
+			} else {
+				script.setText("");
+			}
+		}
+	}
+
 	class PlatformToolbar extends JPanel {
 		public PlatformToolbar() {
-			setPreferredSize(new Dimension(1200, 70));
+			setPreferredSize(new Dimension(1700, 70));
 			create();
 		}
 
@@ -234,8 +290,15 @@ public class Editor extends JPanel {
 		private JButton						mobile			= new JButton("Ruchoma");
 		private JCheckBox					move_loop		= new JCheckBox("Pętla ruchu");
 
+		private JComboBox<String>			orientation		= new JComboBox<String>(new String[] {
+																	"NONE",
+																	"RIGHT",
+																	"LEFT",
+																	"UP",
+																	"DOWN" });
+
 		public PlatformInfo getPlatformInstance() {
-			return new PlatformInfo(map_renderer.getVisibleRect().x
+			PlatformInfo p = new PlatformInfo(map_renderer.getVisibleRect().x
 					+ map_renderer.getVisibleRect().width / 2 - 50,
 					map_renderer.getVisibleRect().y
 							+ map_renderer.getVisibleRect().height / 2 - 30,
@@ -246,6 +309,8 @@ public class Editor extends JPanel {
 					Integer.valueOf(levels.getRightComponent()
 							.getSelectedItem()
 							.toString()));
+			p.script_id = script_id_counter++;
+			return p;
 		}
 
 		/**
@@ -257,6 +322,10 @@ public class Editor extends JPanel {
 			if (info.mob_type != null) {
 				return;
 			}
+			orientation.setSelectedIndex(info.orientation);
+			//
+			script_toolbar.refreshScript();
+			//
 			platform_color.getRightComponent()
 					.setBackground(new Color(info.col.getRGB()));
 			//
@@ -330,8 +399,8 @@ public class Editor extends JPanel {
 							if (selected != null) {
 								selected.setColor(new Color(btn.getBackground()
 										.getRGB()));
-								Editor.this.repaint();
 							}
+							Editor.this.repaint();
 						}
 					});
 
@@ -361,6 +430,9 @@ public class Editor extends JPanel {
 							Flag _flag = Flag.valueOf(flag);
 							if (_flag != Flag.SHAPE) {
 								selected.flag |= _flag.getFlag();
+								if (_flag == Flag.SCRIPT) {
+									selected.script = JOptionPane.showInputDialog("Wpisz skrypt:");
+								}
 							} else {
 								reset_shape = false;
 								selected.setShape(shapes.getSelectedIndex() == -1 ? null
@@ -518,7 +590,7 @@ public class Editor extends JPanel {
 			scroll_shapes.setBounds(435, 5, 150, 80);
 
 			JButton move_right = new JButton("->");
-			move_right.setBounds(1090, 5, 55, 70);
+			move_right.setBounds(1150, 5, 55, 35);
 			move_right.addActionListener(new ActionListener() {
 
 				@Override
@@ -531,6 +603,73 @@ public class Editor extends JPanel {
 						}
 					}
 					Editor.this.map_renderer.repaint();
+				}
+			});
+			JButton move_down = new JButton("_");
+			move_down.setBounds(1150, 45, 55, 35);
+			move_down.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					for (PlatformInfo info : map_renderer.getMap()
+							.getPlatforms()) {
+						info.y += 50;
+						if (info.to_y > 0) {
+							info.to_y += 50;
+						}
+					}
+					Editor.this.map_renderer.repaint();
+				}
+			});
+			JButton move_left = new JButton("<-");
+			move_left.setBounds(1090, 5, 55, 35);
+			move_left.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					for (PlatformInfo info : map_renderer.getMap()
+							.getPlatforms()) {
+						info.x -= 50;
+						if (info.to_x > 0) {
+							info.to_x -= 50;
+						}
+					}
+					Editor.this.map_renderer.repaint();
+				}
+			});
+			JButton move_up = new JButton("^");
+			move_up.setBounds(1090, 45, 55, 35);
+			move_up.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					for (PlatformInfo info : map_renderer.getMap()
+							.getPlatforms()) {
+						info.y -= 50;
+						if (info.to_y > 0) {
+							info.to_y -= 50;
+						}
+					}
+					Editor.this.map_renderer.repaint();
+				}
+			});
+
+			orientation.setBounds(1230, 5, 120, 35);
+
+			JButton set_orientation = new JButton("Ustaw orien.");
+			set_orientation.setBounds(1230, 45, 120, 35);
+			set_orientation.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					PlatformInfo p = map_renderer.getSkel().getPlatform();
+					if (p == null) {
+						JOptionPane.showMessageDialog(null,
+								"Brak zaznaczonego obiektu!");
+					} else {
+						p.orientation = orientation.getSelectedIndex();
+					}
+					map_renderer.repaint();
 				}
 			});
 
@@ -549,6 +688,11 @@ public class Editor extends JPanel {
 			add(borders);
 			add(set_border);
 			add(move_right);
+			add(move_left);
+			add(move_up);
+			add(move_down);
+			add(orientation);
+			add(set_orientation);
 		}
 
 		public JButton getColorChangeButton() {
