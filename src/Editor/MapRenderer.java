@@ -224,6 +224,10 @@ class MapRenderer extends JPanel {
 	 * 
 	 */
 	private void drawPlatform(PlatformInfo platform, Graphics2D g2) {
+		if (platform.x > getWidth() || platform.y > getHeight()
+				|| platform.x + platform.w < 0 || platform.y + platform.y < 0) {
+			return;
+		}
 		g2.translate(platform.x, platform.y);
 		/**
 		 * Rysowanie platformy!

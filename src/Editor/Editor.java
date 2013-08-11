@@ -439,7 +439,7 @@ public class Editor extends JPanel {
 										: shapes_container.get(shapes.getSelectedIndex()));
 							}
 						}
-						if (reset_shape) {
+						if (reset_shape && selected.mob_type == null) {
 							selected.setShape(null);
 						}
 						Editor.this.repaint();
@@ -575,6 +575,9 @@ public class Editor extends JPanel {
 						public void stateChanged(ChangeEvent arg0) {
 							for (PlatformInfo info : map_renderer.getMap()
 									.getPlatforms()) {
+								if(info.col == null) {
+									continue;
+								}
 								info.col = new Color(info.col.getRed(),
 										info.col.getGreen(),
 										info.col.getBlue(),

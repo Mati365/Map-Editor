@@ -128,11 +128,7 @@ public class Map {
 				} else {
 					Editor.script_id_counter = mob.script_id + 1;
 				}
-				if (tok.length == 7) {
-					mob.flag = Integer.valueOf(tok[6]);
-				} else {
-					mob.flag = PlatformInfo.Flag.NONE.getFlag();
-				}
+				mob.flag = Integer.valueOf(tok[5]);
 				platforms.add(mob);
 			}
 			// Importowanie skryptów
