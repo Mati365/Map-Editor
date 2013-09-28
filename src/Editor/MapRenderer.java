@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import javax.swing.JPanel;
 
 import Platforms.Map;
+import Platforms.Mobs.Type;
+import Platforms.Mobs;
 import Platforms.PlatformEditSkel;
 import Platforms.PlatformInfo;
 import Platforms.PlatformInfo.Flag;
@@ -173,8 +175,11 @@ class MapRenderer extends JPanel {
 		for (PlatformInfo platform : map.getPlatforms()) {
 			if (x > platform.x && x < platform.x + platform.w && y > platform.y
 					&& y < platform.y + platform.h) {
-				map.getPlatforms().remove(platform);
-				map.getPlatforms().addLast(platform);
+				if (platform.mob_type != Mobs.Type.PORTAL_BEGIN
+						&& platform.mob_type != Mobs.Type.PORTAL_END) {
+					map.getPlatforms().remove(platform);
+					map.getPlatforms().addLast(platform);
+				}
 				skel.setPlatform(platform);
 				editor.getPlatformProperty().copyFrom(platform);
 				//
@@ -241,7 +246,7 @@ class MapRenderer extends JPanel {
 			 * 2 - dół
 			 * 3 - lewo
 			 */
-			g2.setColor(Color.darkGray);
+			g2.setColor(Color.YELLOW);
 			g2.drawRect(0, 0, (int) platform.w, (int) platform.h);
 			if (platform.isSet(Flag.SCRIPT)) {
 				g2.setColor(Color.white);
@@ -270,6 +275,9 @@ class MapRenderer extends JPanel {
 			g2.setStroke(fill_stroke);
 			if (platform.isSet(Flag.STATIC)) {
 				switch (platform.type) {
+				/**
+					 * 
+					 */
 					case DIAGONAL:
 						if (platform.w > platform.h) {
 							for (int i = 0; i < platform.w / 10; ++i) {
@@ -290,7 +298,36 @@ class MapRenderer extends JPanel {
 					/**
 						 * 
 						 */
+					case METAL:
+						if (platform.w > platform.h) {
+							for (int i = 0; i < platform.w / 8; ++i) {
+								if (i % 2 == 0) {
+									g2.drawLine(i * 8,
+											(int) platform.h,
+											i * 8 + 8,
+											0);
+								} else {
+									g2.drawLine(i * 8,
+											(int) platform.h,
+											i * 8 - 8,
+											0);
+								}
+							}
+						} else {
+							for (int i = 0; i < platform.h / 10; ++i) {
+								g2.drawLine((int) platform.w,
+										i * 10,
+										0,
+										i * 10 + 10);
+							}
+						}
+						break;
+
+					/**
+						 * 
+						 */
 					case SIMPLE:
+					case ICY:
 						if (platform.w > platform.h) {
 							for (int i = 0; i < platform.w / 10; ++i) {
 								g2.drawLine(i * 10, (int) platform.h, i * 10, 0);
@@ -313,7 +350,14 @@ class MapRenderer extends JPanel {
 					default:
 						break;
 				}
-
+				/**
+				 * Pokrywa śniegowa
+				 */
+				if (platform.type == PlatformInfo.Type.ICY) {
+					g2.setColor(Color.WHITE);
+					g2.setStroke(new BasicStroke(3));
+					g2.drawLine(0, -3, (int) platform.w, -3);
+				}
 			}
 		} else {
 			g2.setColor(Color.green);
@@ -393,6 +437,14 @@ class MapRenderer extends JPanel {
 					break;
 			}
 		}
+		if (platform.mob_type == Type.PORTAL_END) {
+			g2.setColor(Color.red);
+			g2.setStroke(new BasicStroke(1));
+			g2.drawLine((int) platform.x,
+					(int) platform.y,
+					(int) platform.linked.x,
+					(int) platform.linked.y);
+		}
 		g2.setColor(Color.white);
 		g2.drawString("ID:" + platform.script_id,
 				platform.x + platform.w - 50,
@@ -408,7 +460,7 @@ class MapRenderer extends JPanel {
 		int y = super.getVisibleRect().y;
 		//
 		if (child == 0) {
-			g.setColor(Color.BLACK);
+			g.setColor(Color.GRAY);
 			g.fillRect(x, y, w, h);
 		}
 		for (MapRenderer map : paralax_maps) {

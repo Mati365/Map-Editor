@@ -2,7 +2,16 @@ package Platforms;
 
 public class Mobs {
 	public enum Type {
-		SCORE(0), HEALTH(1), GHOST(2), GUN(4), PLAYER(5), SPIKES(6), LADDER(7);
+		SCORE(0),
+		HEALTH(1),
+		GHOST(2),
+		GUN(4),
+		PLAYER(5),
+		SPIKES(6),
+		LADDER(7),
+		LIANE(8),
+		PORTAL_BEGIN(9),
+		PORTAL_END(10);
 
 		public int	val;
 
@@ -31,7 +40,13 @@ public class Mobs {
 		//
 		shapes[Type.SPIKES.val] = new PlatformShape("Mobs/kolce_gora.txt");
 		shapes[Type.LADDER.val] = new PlatformShape("Mobs/drabina.txt");
+		shapes[Type.LIANE.val] = new PlatformShape("Mobs/liana.txt");
+
+		shapes[Type.PORTAL_BEGIN.val] = new PlatformShape("Mobs/portal_poczatek.txt");
+		shapes[Type.PORTAL_END.val] = new PlatformShape("Mobs/portal_koniec.txt");
 	}
+
+	public static PlatformInfo	last_created	= null;
 
 	public static PlatformInfo getMob(
 			Type type,
@@ -53,8 +68,17 @@ public class Mobs {
 		platform.orientation = orientation;
 
 		switch (type) {
+		/**
+			 * 
+			 */
 			case LADDER:
 				platform.fitToWidth(24);
+				break;
+			/**
+				 * 
+				 */
+			case LIANE:
+				platform.fitToWidth(16);
 				break;
 			/**
 			 * 
@@ -92,10 +116,29 @@ public class Mobs {
 			case PLAYER:
 				platform.fitToWidth(23);
 				break;
+
+			/**
+				 * 
+				 */
+			case PORTAL_BEGIN:
+			case PORTAL_END:
+				platform.fitToWidth(16);
+				break;
 		}
 		platform.resize_lock = true;
 		platform.mob_type = type;
 		platform.flag = PlatformInfo.Flag.NONE.getFlag();
+		if (type == Type.PORTAL_END) {
+			if (last_created.mob_type == Type.PORTAL_BEGIN) {
+				last_created.linked = platform;
+				platform.linked = last_created;
+			} else {
+				return null;
+			}
+		}
+
+		last_created = platform;
+
 		return platform;
 	}
 }

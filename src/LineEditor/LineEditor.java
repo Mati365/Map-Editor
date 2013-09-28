@@ -341,6 +341,8 @@ public class LineEditor extends JPanel {
 						pPoint p = pPoints.get(i);
 						p.x /= 10;
 						p.y /= 10;
+						//p.x += 100;
+						//p.y += 100;
 						if (i > 0 && pPoints.get(i - 1).begin) {
 							pPoints.get(i - 1).x = p.x;
 							pPoints.get(i - 1).y = p.y;

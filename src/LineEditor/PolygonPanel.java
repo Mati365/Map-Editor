@@ -43,7 +43,7 @@ public class PolygonPanel extends JPanel implements MouseListener,
 	private int		spaces				= 10;
 	private pPoint	active_pPoint		= new pPoint(-1, -1, true);
 	private Color	line_color			= Color.WHITE;
-	private Color	background_color	= Color.BLACK;
+	private Color	background_color	= Color.GRAY;
 
 	public Color getBackgroundColor() {
 		return background_color;
@@ -102,6 +102,7 @@ public class PolygonPanel extends JPanel implements MouseListener,
 					null);
 		}
 		g2.setStroke(new BasicStroke(2));
+		g2.setColor(Color.white);
 		for (int i = 0; i < pPoints.size(); ++i) {
 			if (i != 0 && !pPoints.get(i).begin) {
 				g.drawLine(pPoints.get(i - 1).x * spaces, pPoints.get(i - 1).y

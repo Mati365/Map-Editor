@@ -29,8 +29,10 @@ public class PlatformInfo {
 	public int				script_id		= -1;
 	public int				orientation		= 0;
 
+	public PlatformInfo		linked			= null;
+
 	public enum Type {
-		DIAGONAL(0), SIMPLE(1), FILLED(2), NONE(3), MOB(4);
+		DIAGONAL(0), SIMPLE(1), FILLED(2), ICY(3), METAL(4), NONE(5), MOB(6);
 
 		public int	val;
 

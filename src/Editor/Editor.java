@@ -575,7 +575,7 @@ public class Editor extends JPanel {
 						public void stateChanged(ChangeEvent arg0) {
 							for (PlatformInfo info : map_renderer.getMap()
 									.getPlatforms()) {
-								if(info.col == null) {
+								if (info.col == null) {
 									continue;
 								}
 								info.col = new Color(info.col.getRed(),
@@ -676,6 +676,12 @@ public class Editor extends JPanel {
 				}
 			});
 
+			JScrollPane scroll_types = new JScrollPane(types);
+			scroll_types.setBounds(types.getX(),
+					types.getY(),
+					types.getWidth(),
+					types.getHeight());
+
 			setLayout(null);
 			add(platform_color);
 			add(remove);
@@ -687,7 +693,7 @@ public class Editor extends JPanel {
 			add(update_flags);
 			add(mobile);
 			add(move_loop);
-			add(types);
+			add(scroll_types);
 			add(borders);
 			add(set_border);
 			add(move_right);

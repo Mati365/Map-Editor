@@ -25,15 +25,20 @@ public class Map {
 			// Eksport pozycji gracza
 			boolean player_exported = false;
 			PrintWriter out = new PrintWriter(_path);
+
+			// temperature weather
+			out.println("0 1");
 			for (PlatformInfo s : platforms) {
 				if (s.mob_type == Mobs.Type.PLAYER) {
-					out.println((int) s.x + " " + (int) s.y + " " + s.w);
+					out.println((int) s.x + " " + (int) s.y + " " + s.w
+							+ "gracz_mikolaj.txt");
 					player_exported = true;
 					break;
 				}
 			}
+
 			if (!player_exported) {
-				out.println(0 + " " + 0);
+				out.println(0 + " " + 0 + " " + 23 + " gracz_robot.txt ");
 			}
 			// Wyliczanie mobów
 			LinkedList<PlatformInfo> mobs = new LinkedList<PlatformInfo>();
@@ -92,6 +97,9 @@ public class Map {
 			FileReader fr = new FileReader(new File(_path));
 			BufferedReader br = new BufferedReader(fr);
 
+			// Wczytywanie parametrów mapy
+			br.readLine();
+
 			// Importowanie pozycji gracza
 			String[] tok = br.readLine().split(" ");
 			platforms.add(Mobs.getMob(Mobs.Type.PLAYER,
@@ -121,8 +129,7 @@ public class Map {
 						Double.valueOf(tok[2]).intValue(),
 						1,
 						Integer.valueOf(tok[3]));
-				mob.script_id = tok.length == 5 ? Integer.valueOf(Integer.valueOf(tok[4]))
-						: -1;
+				mob.script_id = Integer.valueOf(Integer.valueOf(tok[4]));
 				if (mob.script_id == -1) {
 					mob.script_id = Editor.script_id_counter++;
 				} else {
